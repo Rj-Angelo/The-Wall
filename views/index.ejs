@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>The Wall Demo</title>
+	</head>
+	<body>
+		<h1>Coding Dojo Wall</h1>
+		<p>Welcome <%= `${name}` %></p>
+		<% if(err){ 
+			for(err in err){ %>
+				<p><%= err %></p>
+		<%	}
+		 } %>
+		<form action="/destroy_session" method="POST">
+			<input type="hidden" name="_method" value="DELETE">
+			<input type="submit" value="Log out">
+		</form>
+		<p>Post a message</p>
+		<form action="create_message" method="post">
+			<textarea name="message"></textarea>
+			<input type="submit" value="Post"></input>
+		</form>
+		<% for(message_index in messages){ %>
+			<div class="message">
+				<p><%= `${messages[message_index].name} - ${messages[message_index].date}` %></p>
+				<p><%= messages[message_index].message %></p>
+				<% if(messages[message_index].users_id === user_id){ %>
+				<form action="/destroy_message" method="post">
+					<input type="hidden" name="message_id" value="<%= messages[message_index].id %>">
+					<input type="hidden" name="user_id" value="<%= messages[message_index].users_id %>">
+					<input type="submit" value="Delete">
+				</form>	
+				<% } %>
+				<ol>
+					<% for(comment_index in comments){ if(comments[comment_index].messages_id===messages[message_index].id){ %>
+					<li>
+						<p><%= `${comments[comment_index].name} - ${comments[comment_index].date}` %></p>
+						<p><%= comments[comment_index].comment %></p>
+						<% if(comments[comment_index].users_id === user_id){ %>
+							<form action="destroy_comment" method="post">
+								<input type="hidden" name="comment_id" value="<%= comments[comment_index].id %>">
+								<input type="hidden" name="user_id" value="<%= comments[comment_index].users_id %>">
+								<input type="submit" value="Delete">
+							</form>	
+						<% } %>
+					</li>
+					<% } 
+					} %>
+					<li>
+						<p>Reply</p>
+						<form action="create_comment" method="post">
+							<textarea name="comment"></textarea>
+							<input type="hidden" name="message_id" value="<%= messages[message_index].id %>">
+							<input type="submit" value="comment">
+						</form>
+					</li>
+				</ol>
+			</div>
+		<% } %>
+	</body>
+</html>
