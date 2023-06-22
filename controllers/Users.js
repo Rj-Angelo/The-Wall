@@ -6,7 +6,7 @@ class Users{
 	}
 
 	async create(req, res){
-		const validate_inputs = User.validate_registration_inputs(req.body);
+		const validate_inputs = User.validateRegistration(req.body);
 
 		if(validate_inputs.is_valid){
 

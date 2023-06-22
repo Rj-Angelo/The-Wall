@@ -1,96 +1,82 @@
-const config = require("../config");
+const config = require ("../config");
 const mysql = require("mysql2/promise");
 
 class Comment{
 	constructor(){
 	}
 
-	async getAll(req, res){
+	async getAllComments(){
 		const con = await mysql.createConnection(config.database);
 
-		let result = {
-			status: 0,
-			data: [],
-			err: ""
-		}
+		let response = { status: false, result: [], error: [] }
 
 		try{
-			const get_all_comments_query = (`SELECT comments.id, messages_id, comments.users_id, CONCAT(users.first_name," ", users.last_name) as "name", comment, DATE_FORMAT(comments.created_at,"%M, %D %Y") as "date"
+			const get_all_comments_query = (`SELECT comments.id, message_id, comments.user_id, CONCAT(users.first_name," ", users.last_name) as "name", comment, DATE_FORMAT(comments.created_at,"%M, %D %Y") as "date"
 			FROM comments
-			INNER JOIN users ON users_id = users.id
+			INNER JOIN users ON user_id = users.id
 			ORDER BY comments.id DESC`);
 
-			result.status = 1;
-			[ result.data ] = await con.query(get_all_comments_query); 
+			response.status = true;
+			[ response.result ] = await con.query(get_all_comments_query); 
 		}
-		catch(e){
-			result.err = e;
+		catch(error){
+			console.log(error);
+			response.error.push(error); 
 		}
 
-		return result;
+		return response;
 	}
 
-	validate_input(user_input){
-		let result = {
-			status: 0,
-			err: []
-		};
+	validateComment(user_input){
+		let response = {status: false, error: []};
 
 		if(!user_input ||
 			user_input.trim() < 1){
-			result.err.push("Comment cannot be blank");	
+			response.error.push("Comment cannot be blank");	
 		}
 		else{
-			result.status = 1;
+			response.status = true;
 		}
 
-		return result;
+		return response;
 	}
 
-	async create(user_input, message_id, user_id){
+	async createComment(user_input, message_id, user_id){
 		const con = await mysql.createConnection(config.database);
 		
-		let result = {
-			status: 0,
-			data: [],
-			err: ""
-		}
+		let response = {status: false, result: [], error: []}
 
 		try{
-			const insert_new_comment_query = (`INSERT INTO comments (messages_id, users_id, comment, created_at, updated_at) values(?,?,?,NOW(),NOW())`);
+			const insert_new_comment_query = (`INSERT INTO comments (message_id, user_id, comment, created_at, updated_at) values(?,?,?,NOW(),NOW())`);
 
-			[result.data] = await con.query(insert_new_comment_query,[message_id,user_id,user_input]);
+			[ response.result ] = await con.query(insert_new_comment_query,[message_id,user_id,user_input]);
 
-			if(result.data){
-				result.status = 1;
+			if(response.result){
+				response.status = true;
 			}
 		}
-		catch(e){
-			console.log(e)
-			result.err = e;
+		catch(error){
+			console.log(error)
+			response.error.push(error);
 		}
 
-		return result;
+		return response;
 	}
 
-	async destroy(message_id, user_id){
+	async destroyComment(message_id, user_id){
 		const con = await mysql.createConnection(config.database);
 
-		let result = {
-			status: 0,
-			data: [],
-			err: ""
-		}
+		let response = { status: false, result: [], error: []}
 		
 		try{
-			const delete_comment_query = (`DELETE FROM comments WHERE id = ? and users_id = ?`);
+			const delete_comment_query = (`DELETE FROM comments WHERE id = ? and user_id = ?`);
 			
-			result.data = await con.query(delete_comment_query, [ message_id, user_id ]);
-			result.status = 1;
+			response.result = await con.query(delete_comment_query, [ message_id, user_id ]);
+			response.status = true;
 		}
-		catch(e){
-			console.log(e);
-			result.err = e;
+		catch(error){
+			console.log(error);
+			response.error.push(error);
 		}
 	}
 }

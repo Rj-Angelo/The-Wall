@@ -8,118 +8,102 @@ class User{
 	constructor(){
 	}
 
-	validate_login_inputs(user_inputs){
-		let result = {
-			is_valid: 0, 
-			err: ""
-		};
+	validateLogin(user_inputs){
+		let response = { is_valid: false, error: [] };
 
 		/* Validate Email*/
 		if(user_inputs.email.length > 4){
 			if( 
 				user_inputs.email.lastIndexOf("@")
 				< user_inputs.email.lastIndexOf(".com")
-			) {
-				result.is_valid = 1;
+			){
+				response.is_valid = true;
 			}
 		}
 		else{
-			result.err = "Email cant be less than 4 letters"
+			response.error = "Email cant be less than 4 letters";
 		}
 		
 		/* Validate Password */
-		if(user_inputs.password.length > 0){
-			result.is_valid *= 1;
+		if(user_inputs.password.length < 1 &&
+			response.is_valid == true){
+			response.is_valid == false;
+			response.error.push("Password cannot be blank");
 		}
-		else{
-			result.is_valid = 0;
-			result.err = "Password cannot be blank";
-		}
-		return result;
+
+		return response;
 	}
 
-	validate_registration_inputs(user_inputs){
-		let  result = {
-			is_valid: 1,
-			err: []
-		}
+	validateRegistration(user_inputs){
+		let  response = {is_valid: true, error: []}
 
 		/* Validate fields if empty*/
 		for(let input in user_inputs){
 			if(user_inputs[input] === ""){
-				result.is_valid  = 0;
-				result.err.push(input + " cannot be blank.");
-			}else{
-				result.is_valid *= 1;
+				response.is_valid = false;
+				response.error.push(input + " cannot be blank.");
 			}
 		}
 
 		if(
 			user_inputs.password 
 			!= user_inputs.confirm_password
-		) {
-			result.is_valid = 0;
-			result.err.push("Password and Confirm Password should match");
+		){
+			response.is_valid = false;
+			response.error.push("Password and Confirm Password should match");
 		}
 
-		return result;
+		return response;
 	}
 
-	async validate_user(user_inputs){
+	async validateUser(user_inputs){
 		const con = await Mysql.createConnection(config.database);
 
-		let result = {
-			status: 0,
-			data: [],
-			err: ""
-		}
+		let response = {status: false, result: [], error: []}
 
 		try{
 			const get_user_by_email = (`SELECT *
 				FROM users
 				WHERE email = ?`);
 			
-			[[ result.data ]] = await con.query(get_user_by_email, [ user_inputs.email ]);
-		}catch(e){
-			result.err = e;
+			[[ response.result ]] = await con.query(get_user_by_email, [ user_inputs.email ]);
+		}catch(error){
+			response.error.push(error);
 		}
-		if(result.data){
-			if(bcrypt.compareSync(user_inputs.password, result.data.password)){
-				result.status = 1;
+		if(response.result){
+			if(bcrypt.compareSync(user_inputs.password, response.result.password)){
+				response.status = true;
 			}
 			else{
-				result.err = "Incorrect Password";
+				response.error.push("Incorrect Password");
 			}
 		}else{
-			result.err = "User does not exist";
+			response.error.push("User does not exist");
 		}
 
-		return result;
+		return response;
 	}
 
-	async create(user_details, password){
+	async createUser(user_details, password){
 		const con = await Mysql.createConnection(config.database);
 
-		let result = {
-			status: 0,
-			data: [],
-			err: ""
-		};
+		let response = {status: false, result: [], error: []};
 
 		try{
 			user_details.push(bcrypt.hashSync(password,saltRounds));
 
 			const insert_new_user_query = (`INSERT INTO users (first_name, last_name, email, password, created_at, updated_at) values(?,?,?,?,NOW(),NOW())`);
 			
-			result.status = 1;
-			result.data = await con.query(insert_new_user_query,user_details);
+			response.status = true;
+			response.result = await con.query(insert_new_user_query,user_details);
 		}
-		catch(e){
-			result.err = e;
+		catch(error){
+			response.error = error;
 		}
 
-		return result;
+		return response;
 	}
 }
 
 module.exports = new User;
+

@@ -6,33 +6,35 @@ class Messages{
 	}
 
 	async index(req, res){
-		const err = req.session.err ?? null;
+		const errors = req.session.error ?? null;
 
-		const messages = await Message.getAll();
-		const comments = await Comment.getAll();
+		const messages = await Message.getAllMessages();
+		const comments = await Comment.getAllComments();
 
-		res.render("index",{ messages: messages.data, comments: comments.data, name: req.session.name, user_id: req.session.user_id, err: err });
+		res.render("index",
+		{ 
+			messages: messages.result, 
+			comments: comments.result, 
+			name: req.session.name, 
+			user_id: req.session.user_id, 
+			errors: errors
+		});
 	}
 
-	async create(req, res){
-		const validate_inputs = await Message.validate_input(req.body);
+	async createMessage(req, res){
+		const validate_inputs = await Message.validateMessage(req.body);
 		if(validate_inputs.status){
-			const result = await Message.create(req.session.user_id, req.body.message);
+			const result = await Message.createMessage(req.session.user_id, req.body.message);
 		}
 		else{
-			console.log(validate_inputs.err);
+			console.log(validate_inputs.error);
 		}
 		
 		res.redirect("/");
 	}
 
-	async destroy(req, res){
-		console.log(req.session.user_id);
-		console.log(req.body.user_id);
-		if(req.session.user_id === parseInt(req.body.user_id)){
-			const result = await Message.destroy(req.body.message_id, req.session.user_id);
-			console.log(result);
-		}
+	async destroyMessage(req, res){
+		const result = await Message.destroyMessage(req.body.message_id, req.session.user_id);
 		res.redirect("/");
 	}
 }

@@ -6,9 +6,9 @@
 	<body>
 		<h1>Coding Dojo Wall</h1>
 		<p>Welcome <%= `${name}` %></p>
-		<% if(err){ 
-			for(err in err){ %>
-				<p><%= err %></p>
+		<% if(errors){ 
+			for(error in errors){ %>
+				<p><%= error %></p>
 		<%	}
 		 } %>
 		<form action="/destroy_session" method="POST">
@@ -24,22 +24,20 @@
 			<div class="message">
 				<p><%= `${messages[message_index].name} - ${messages[message_index].date}` %></p>
 				<p><%= messages[message_index].message %></p>
-				<% if(messages[message_index].users_id === user_id){ %>
+				<% if(messages[message_index].user_id === user_id){ %>
 				<form action="/destroy_message" method="post">
 					<input type="hidden" name="message_id" value="<%= messages[message_index].id %>">
-					<input type="hidden" name="user_id" value="<%= messages[message_index].users_id %>">
 					<input type="submit" value="Delete">
 				</form>	
 				<% } %>
 				<ol>
-					<% for(comment_index in comments){ if(comments[comment_index].messages_id===messages[message_index].id){ %>
+					<% for(comment_index in comments){ if(comments[comment_index].message_id===messages[message_index].id){ %>
 					<li>
 						<p><%= `${comments[comment_index].name} - ${comments[comment_index].date}` %></p>
 						<p><%= comments[comment_index].comment %></p>
-						<% if(comments[comment_index].users_id === user_id){ %>
+						<% if(comments[comment_index].user_id === user_id){ %>
 							<form action="destroy_comment" method="post">
 								<input type="hidden" name="comment_id" value="<%= comments[comment_index].id %>">
-								<input type="hidden" name="user_id" value="<%= comments[comment_index].users_id %>">
 								<input type="submit" value="Delete">
 							</form>	
 						<% } %>

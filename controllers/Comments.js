@@ -4,32 +4,29 @@ class Comments{
 	constructor(req, res){
 	}
 
-	create(req, res){
-		const validate_comment = Comment.validate_input(req.body.comment);
+	createComment(req, res){
+		const validate_comment = Comment.validateComment(req.body.comment);
 
 		if(validate_comment.status){
-			const user_comment = Comment.create(
+			const user_comment = Comment.createComment(
 				req.body.comment,
 				req.body.message_id,
 				req.session.user_id
 			);
 
-			if(!user_comment.result){
-				req.session.err = user_comment.err;
+			if(!user_comment.status){
+				req.session.error = user_comment.error;
 			}
 		}
 		else{
-			req.session.err = validate_comment.err;
+			req.session.error = validate_comment.error;
 		}
 
 		res.redirect("/");
 	}
 
-	destroy(req,res){
-		if(req.session.user_id === parseInt(req.body.user_id)){
-			const delete_comment = Comment.destroy(req.body.comment_id, req.session.user_id);
-		}
-
+	destroyComment(req, res){
+		Comment.destroyComment(req.body.comment_id, req.session.user_id);
 		res.redirect("/");
 	}
 }
