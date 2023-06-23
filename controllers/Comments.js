@@ -5,29 +5,39 @@ class Comments{
 	}
 
 	createComment(req, res){
-		const validate_comment = Comment.validateComment(req.body.comment);
+		try{
+			let validate_comment = Comment.validateComment(req.body.comment);
 
-		if(validate_comment.status){
-			const user_comment = Comment.createComment(
-				req.body.comment,
-				req.body.message_id,
-				req.session.user_id
-			);
+			if (validate_comment.status) {
+				let user_comment = Comment.createComment(
+					req.body.comment,
+					req.body.message_id,
+					req.session.user_id
+				);
 
-			if(!user_comment.status){
-				req.session.error = user_comment.error;
+				if (!user_comment.status) {
+					req.session.error = user_comment.error;
+				}
 			}
-		}
-		else{
-			req.session.error = validate_comment.error;
-		}
+			else {
+				req.session.error = validate_comment.error;
+			}
 
-		res.redirect("/");
+			res.redirect("/");
+		}
+		catch(error){
+			console.log(error);
+		}
 	}
 
 	destroyComment(req, res){
-		Comment.destroyComment(req.body.comment_id, req.session.user_id);
-		res.redirect("/");
+		try{
+			Comment.destroyComment(req.body.comment_id, req.session.user_id);
+			res.redirect("/");
+		}
+		catch(error){
+			console.log(error);
+		}
 	}
 }
 
